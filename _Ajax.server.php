@@ -5652,7 +5652,7 @@ function reporte_solicitudes($aForm = '')
                          p.pedi_fec_entr , p.pedi_res_pedi,  p.pedi_det_pedi,
                          p.pedi_des_cons,  p.pedi_cod_anu, p.pedi_fec_anu, 
                          p.pedi_are_soli, p.pedi_est_pedi, p.pedi_user_anu,
-                         p.pedi_user_web, p.pedi_est_prof
+                         p.pedi_user_web, p.pedi_est_prof, p.pedi_pri_pedi
                   FROM saepedi p
                   $where
                   ORDER BY 1";
@@ -5676,7 +5676,7 @@ function reporte_solicitudes($aForm = '')
                 $table_op .= '            <th>Fecha Entrega</th>';
                 $table_op .= '            <th>Elaborado Por</th>';
                 $table_op .= '            <th>Motivo</th>';
-
+                $table_op .= '            <th>Prioridad</th>';
                 $table_op .= '            <th>Observaciones</th>';
                 $table_op .= '            <th>Estado</th>';
                 $table_op .= '            <th class="no-sort no-toggle">Detalle</th>';
@@ -5703,6 +5703,7 @@ function reporte_solicitudes($aForm = '')
 
                     $responsa   = $oIfx->f('pedi_res_pedi');
                     $motivo     = $oIfx->f('pedi_det_pedi');
+                    $prioridad  = $oIfx->f('pedi_pri_pedi');
 
                     $usuario_solicitud = $oIfx->f('pedi_user_web');
 
@@ -5951,6 +5952,7 @@ function reporte_solicitudes($aForm = '')
                     $table_op .= '          <td>' . $fec_entr . '</td>';
                     $table_op .= '          <td class="col-responsable">' . $responsa . '</td>';
                     $table_op .= '          <td class="col-motivo">' . $motivo . '</td>';
+                    $table_op .= '          <td class="col-prioridad">' . ($prioridad ?: '-') . '</td>';
 
                     // Observaciones
                     $table_op .= '          <td>' . $observaciones . '</td>';
@@ -6789,7 +6791,8 @@ function carga_anulado($secuencial, $empresa, $sucursal)
     $sql = "SELECT pedi_cod_pedi, pedi_fec_pedi, pedi_det_pedi,
                  pedi_des_cons, pedi_are_soli, pedi_lug_entr,
                  pedi_fec_entr, pedi_uso_pedi, pedi_tipo_pedi,
-                 pedi_cod_clpv, pedi_tip_sol, COALESCE(pedi_omit_aprob, 'N') as pedi_omit_aprob
+                 pedi_cod_clpv, pedi_tip_sol, pedi_pri_pedi,
+                 COALESCE(pedi_omit_aprob, 'N') as pedi_omit_aprob
                  from saepedi
                  where pedi_cod_empr=$empresa and pedi_cod_sucu=$sucursal
                  and pedi_cod_pedi =  '$secuencial'";
@@ -6807,6 +6810,7 @@ function carga_anulado($secuencial, $empresa, $sucursal)
                 $lugar = $oCon->f('pedi_lug_entr');
                 $uso = $oCon->f('pedi_uso_pedi');
                 $tipo = $oCon->f('pedi_tip_sol');
+                $prioridad = $oCon->f('pedi_pri_pedi');
                 $clpv = $oCon->f('pedi_cod_clpv');
                 $omitirAprobaciones = strtoupper($oCon->f('pedi_omit_aprob')) === 'S';
 
@@ -6820,6 +6824,7 @@ function carga_anulado($secuencial, $empresa, $sucursal)
                 $oReturn->assign("lugar", "value", $lugar);
                 $oReturn->assign("uso", "value", $uso);
                 $oReturn->assign("tipo", "value", $tipo);
+                $oReturn->assign("pedi_pri_pedi", "value", $prioridad);
 
                 if ($clpv != 0) {
 
@@ -6912,7 +6917,8 @@ function carga_pedido($secuencial, $empresa, $sucursal)
     $sql = "SELECT pedi_cod_pedi, pedi_fec_pedi, pedi_det_pedi,
                  pedi_des_cons, pedi_are_soli, pedi_lug_entr,
                  pedi_fec_entr, pedi_uso_pedi, pedi_tipo_pedi,
-                 pedi_cod_clpv, pedi_tip_sol, COALESCE(pedi_omit_aprob, 'N') as pedi_omit_aprob
+                 pedi_cod_clpv, pedi_tip_sol, pedi_pri_pedi,
+                 COALESCE(pedi_omit_aprob, 'N') as pedi_omit_aprob
                  from saepedi
                  where pedi_cod_empr=$empresa and pedi_cod_sucu=$sucursal
                  and pedi_cod_pedi =  '$secuencial'";
@@ -6937,6 +6943,7 @@ function carga_pedido($secuencial, $empresa, $sucursal)
                 $lugar = $oCon->f('pedi_lug_entr');
                 $uso = $oCon->f('pedi_uso_pedi');
                 $tipo = $oCon->f('pedi_tip_sol');
+                $prioridad = $oCon->f('pedi_pri_pedi');
                 $clpv = $oCon->f('pedi_cod_clpv');
                 $omitirAprobaciones = strtoupper($oCon->f('pedi_omit_aprob')) === 'S';
 
@@ -6951,6 +6958,7 @@ function carga_pedido($secuencial, $empresa, $sucursal)
                 $oReturn->assign("lugar", "value", $lugar);
                 $oReturn->assign("uso", "value", $uso);
                 $oReturn->assign("tipo", "value", $tipo);
+                $oReturn->assign("pedi_pri_pedi", "value", $prioridad);
 
                 if ($clpv != 0) {
 
@@ -7944,6 +7952,13 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
 
     $fechaPedidoDefault = date('Y') . '/' . date('m') . '/' . date('d');
     $fechaEntregaDefault = date('Y/m/d', strtotime('+7 days'));
+    $prioridadesDisponibles = array('ALTA', 'MEDIA', 'BAJA');
+    $prioridadDefault = 'MEDIA';
+    $prioridadOpciones = '';
+    foreach ($prioridadesDisponibles as $prioridad) {
+        $selected = $prioridad === $prioridadDefault ? ' selected' : '';
+        $prioridadOpciones .= '<option value="' . $prioridad . '"' . $selected . '>' . $prioridad . '</option>';
+    }
 
     $codigoInformativo = '';
     $codigoGenerado = '';
@@ -8427,6 +8442,16 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
                             </div>
                             <div class="col-sm-6 col-md-3">
                                 <div class="form-group">' . $ifu->ObjetoHtmlLBL('solicitado') . $ifu->ObjetoHtml('solicitado') . '</div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-bottom: 10px;">
+                            <div class="col-sm-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="control-label" for="pedi_pri_pedi">Prioridad</label>
+                                    <select id="pedi_pri_pedi" name="pedi_pri_pedi" class="form-control">
+                                        ' . $prioridadOpciones . '
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="row" style="margin-bottom: 10px;">
@@ -9150,6 +9175,10 @@ function guarda_pedido($opcion_tmp, $aForm = '', $idReq = 0)
                     $uso = strtoupper($aForm['uso']);
                     $lugar = strtoupper($aForm['lugar']);
                     $observacion = strtoupper($aForm['observaciones']);
+                    $prioridad = isset($aForm['pedi_pri_pedi']) ? strtoupper(trim($aForm['pedi_pri_pedi'])) : 'MEDIA';
+                    if (!in_array($prioridad, array('ALTA', 'MEDIA', 'BAJA'), true)) {
+                        $prioridad = 'MEDIA';
+                    }
 
                     //CODIGO REFERENCIA PEDIDO ANULADO
                     //$pedi_cod_anu = $aForm['pedi_cod_anu'];
@@ -9205,7 +9234,7 @@ function guarda_pedido($opcion_tmp, $aForm = '', $idReq = 0)
                                                                pedi_are_soli,     pedi_lug_entr,     pedi_uso_pedi,
                                                                pedi_des_cons,     pedi_user_web,     pedi_fech_server,
                                                                pedi_tipo_pedi,    pedi_tip_sol,    pedi_cod_anu,     
-                                                               pedi_omit_aprob      )
+                                                               pedi_omit_aprob,   pedi_pri_pedi      )
                                                         values( $ultimo_id, $sucursal,         $idempresa,
                                                                '$empleado',       '$prov' ,           '$formato',
                                                                 $usuario_ifx,     $idprdo,           $idejer,
@@ -9213,7 +9242,7 @@ function guarda_pedido($opcion_tmp, $aForm = '', $idReq = 0)
                                                                '$fecha_pedido',   '$fecha_entrega',  '$pedi_est_pedi',
                                                                '$area' ,          '$lugar',          '$uso',
                                                                '$observacion',     $usuario_web,     '$fecha_servidor',
-                                                            '$tipo_logistica',  '$tipo_solicitud',  $pedi_cod_anu, '$valorOmitirAprobaciones') RETURNING pedi_cod_pedi;";
+                                                            '$tipo_logistica',  '$tipo_solicitud',  $pedi_cod_anu, '$valorOmitirAprobaciones', '$prioridad') RETURNING pedi_cod_pedi;";
                     $oIfx->QueryT($sql_cab);
                     $secuencial = $oIfx->ResRow['pedi_cod_pedi'];
 
@@ -9527,6 +9556,10 @@ function actualiza_pedido($id_pedido, $aForm = '')
                     $uso = $aForm['uso'];
                     $lugar = $aForm['lugar'];
                     $observacion = $aForm['observaciones'];
+                    $prioridad = isset($aForm['pedi_pri_pedi']) ? strtoupper(trim($aForm['pedi_pri_pedi'])) : 'MEDIA';
+                    if (!in_array($prioridad, array('ALTA', 'MEDIA', 'BAJA'), true)) {
+                        $prioridad = 'MEDIA';
+                    }
 
                     if (empty($prov)) {
                         $prov = 0;
@@ -9563,7 +9596,7 @@ function actualiza_pedido($id_pedido, $aForm = '')
                     $sqlu = "UPDATE saepedi set pedi_fec_pedi='$fecha_pedido', pedi_det_pedi='$motivo',
                         pedi_des_cons='$observacion', pedi_are_soli='$area', pedi_lug_entr='$lugar',
                         pedi_fec_entr= '$fecha_entrega', pedi_uso_pedi='$uso', pedi_tipo_pedi='$tipo_logistica', pedi_tip_sol='$tipo_solicitud',
-                        pedi_cod_clpv='$prov', pedi_fech_server='$fecha_servidor', pedi_omit_aprob='$valorOmitirAprobaciones' where pedi_cod_empr=$idempresa and pedi_cod_sucu=$sucursal
+                        pedi_cod_clpv='$prov', pedi_fech_server='$fecha_servidor', pedi_omit_aprob='$valorOmitirAprobaciones', pedi_pri_pedi='$prioridad' where pedi_cod_empr=$idempresa and pedi_cod_sucu=$sucursal
                         and pedi_cod_pedi =  '$id_pedido'";
                     $oIfx->QueryT($sqlu);
 
