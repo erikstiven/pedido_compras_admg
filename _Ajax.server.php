@@ -8456,7 +8456,9 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
                             <div class="col-sm-6 col-md-3">
                                 <div class="form-group">' . $ifu->ObjetoHtmlLBL('lugar') . $ifu->ObjetoHtml('lugar') . '</div>
                             </div>
-                            <div class="col-sm-6 col-md-3">
+                        </div>
+                        <div class="row" style="margin-bottom: 10px;">
+                            <div class="col-sm-6 col-md-6">
                                 <div class="form-group">
                                     <label class="control-label" for="motivo">Motivo</label>
                                     <textarea id="motivo"
@@ -8465,7 +8467,7 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
                                             rows="2"></textarea>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-md-3">
+                            <div class="col-sm-6 col-md-6">
                                 <div class="form-group">
                                     <label class="control-label" for="observaciones">Observaciones o Descripcion</label>
                                     <textarea id="observaciones"
