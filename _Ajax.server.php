@@ -8441,11 +8441,6 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
                                 </div>
                             </div>
                             <div class="col-sm-6 col-md-3">
-                                <div class="form-group">' . $ifu->ObjetoHtmlLBL('solicitado') . $ifu->ObjetoHtml('solicitado') . '</div>
-                            </div>
-                        </div>
-                        <div class="row" style="margin-bottom: 10px;">
-                            <div class="col-sm-6 col-md-3">
                                 <div class="form-group">
                                     <label class="control-label" for="pedi_pri_pedi">Prioridad</label>
                                     <select id="pedi_pri_pedi" name="pedi_pri_pedi" class="form-control">
@@ -8456,9 +8451,12 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
                         </div>
                         <div class="row" style="margin-bottom: 10px;">
                             <div class="col-sm-6 col-md-3">
+                                <div class="form-group">' . $ifu->ObjetoHtmlLBL('solicitado') . $ifu->ObjetoHtml('solicitado') . '</div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
                                 <div class="form-group">' . $ifu->ObjetoHtmlLBL('lugar') . $ifu->ObjetoHtml('lugar') . '</div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-6 col-md-6">
                                 <div class="form-group">
                                     <label class="control-label" for="motivo">Motivo</label>
                                     <textarea id="motivo"
@@ -8467,16 +8465,17 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
                                             rows="2"></textarea>
                                 </div>
                             </div>
-
-                            <div class="col-sm-3">
+                        </div>
+                        <div class="row" style="margin-bottom: 10px;">
+                            <div class="col-sm-12">
                                 <div class="form-group">
                                     <label class="control-label" for="observaciones">Observaciones o Descripcion</label>
                                     <textarea id="observaciones"
                                             name="observaciones"
                                             class="form-control"
-                                            rows="1"></textarea>
+                                            rows="2"></textarea>
                                 </div>
-                            </div>                            
+                            </div>
 
                         </div>
                    <div class="row" style="margin-bottom: 10px;">
