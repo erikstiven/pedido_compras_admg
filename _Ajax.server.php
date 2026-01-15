@@ -7953,11 +7953,9 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
     $fechaPedidoDefault = date('Y') . '/' . date('m') . '/' . date('d');
     $fechaEntregaDefault = date('Y/m/d', strtotime('+7 days'));
     $prioridadesDisponibles = array('ALTA', 'MEDIA', 'BAJA');
-    $prioridadDefault = 'MEDIA';
-    $prioridadOpciones = '';
+    $prioridadOpciones = '<option value="">Seleccione una opción</option>';
     foreach ($prioridadesDisponibles as $prioridad) {
-        $selected = $prioridad === $prioridadDefault ? ' selected' : '';
-        $prioridadOpciones .= '<option value="' . $prioridad . '"' . $selected . '>' . $prioridad . '</option>';
+        $prioridadOpciones .= '<option value="' . $prioridad . '">' . $prioridad . '</option>';
     }
 
     $codigoInformativo = '';
@@ -8442,8 +8440,8 @@ function genera_formulario_pedido($sAccion = 'nuevo', $aForm = '', $cod_sol = 0,
                             </div>
                             <div class="col-sm-6 col-md-3">
                                 <div class="form-group">
-                                    <label class="control-label" for="pedi_pri_pedi">Prioridad</label>
-                                    <select id="pedi_pri_pedi" name="pedi_pri_pedi" class="form-control">
+                                    <label class="control-label" for="pedi_pri_pedi">* Prioridad</label>
+                                    <select id="pedi_pri_pedi" name="pedi_pri_pedi" class="form-control" required>
                                         ' . $prioridadOpciones . '
                                     </select>
                                 </div>
@@ -9174,9 +9172,12 @@ function guarda_pedido($opcion_tmp, $aForm = '', $idReq = 0)
                     $uso = strtoupper($aForm['uso']);
                     $lugar = strtoupper($aForm['lugar']);
                     $observacion = strtoupper($aForm['observaciones']);
-                    $prioridad = isset($aForm['pedi_pri_pedi']) ? strtoupper(trim($aForm['pedi_pri_pedi'])) : 'MEDIA';
+                    $prioridad = isset($aForm['pedi_pri_pedi']) ? strtoupper(trim($aForm['pedi_pri_pedi'])) : '';
                     if (!in_array($prioridad, array('ALTA', 'MEDIA', 'BAJA'), true)) {
-                        $prioridad = 'MEDIA';
+                        $oReturn->alert('Seleccione una prioridad válida.');
+                        $oReturn->assign("ctrl", "value", 1);
+                        $oReturn->script("jsRemoveWindowLoad();");
+                        return $oReturn;
                     }
 
                     //CODIGO REFERENCIA PEDIDO ANULADO
@@ -9555,9 +9556,12 @@ function actualiza_pedido($id_pedido, $aForm = '')
                     $uso = $aForm['uso'];
                     $lugar = $aForm['lugar'];
                     $observacion = $aForm['observaciones'];
-                    $prioridad = isset($aForm['pedi_pri_pedi']) ? strtoupper(trim($aForm['pedi_pri_pedi'])) : 'MEDIA';
+                    $prioridad = isset($aForm['pedi_pri_pedi']) ? strtoupper(trim($aForm['pedi_pri_pedi'])) : '';
                     if (!in_array($prioridad, array('ALTA', 'MEDIA', 'BAJA'), true)) {
-                        $prioridad = 'MEDIA';
+                        $oReturn->alert('Seleccione una prioridad válida.');
+                        $oReturn->assign("ctrl", "value", 1);
+                        $oReturn->script("jsRemoveWindowLoad();");
+                        return $oReturn;
                     }
 
                     if (empty($prov)) {

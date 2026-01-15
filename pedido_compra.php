@@ -2604,6 +2604,11 @@
         function guardar_pedido(id_op) {
             establecerAprobadoresEnvio();
             if (ProcesarFormulario() == true) {
+                var prioridad = document.getElementById("pedi_pri_pedi");
+                if (!prioridad || prioridad.value === '') {
+                    alertSwal('Seleccione la prioridad del pedido.', 'warning');
+                    return;
+                }
                 const payloadPedido = xajax.getFormValues("form1");
                 console.log('Enviando datos del pedido', payloadPedido);
                 var ctrl = document.getElementById("ctrl").value;
