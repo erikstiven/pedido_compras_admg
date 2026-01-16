@@ -291,10 +291,13 @@ else{
             
             } while ($oIfx->SiguienteRegistro());
 
-            // Si quedó uno solo (impar), cerramos filas con una celda vacía
-            if ($contador % 2 !== 0) {
-                $fila_cargos .= '<td></td>';
-                $fila_nombres .= '<td><br><br></td>';
+            // Si quedaron firmas sin cerrar (menos de 4 en la última fila), completar y cerrar.
+            if ($contador % 4 !== 0) {
+                $faltantes = 4 - ($contador % 4);
+                for ($j = 0; $j < $faltantes; $j++) {
+                    $fila_cargos .= '<td></td>';
+                    $fila_nombres .= '<td><br><br></td>';
+                }
                 $firmas_html .= '<tr>' . $fila_cargos . '</tr>';
                 $firmas_html .= '<tr>' . $fila_nombres . '</tr>';
             }
@@ -305,7 +308,6 @@ else{
     //SECUENCIAL
 
     $secuencial_pedido= cero_mas_func('0', 9 - strlen($pedi)).$pedi;
-
 
 $html = <<<EOD
 <table  border="0"  cellpadding="1" >
