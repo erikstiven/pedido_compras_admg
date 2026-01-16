@@ -237,6 +237,7 @@ else{
     $contador = 0;
     $fila_cargos = '';
     $fila_nombres = '';
+    $firmas_debug = [];
 
     $solicitado_por = '';
 
@@ -263,6 +264,13 @@ else{
 
                 $cargo = $oIfx->f('cargo_nombre');
                 $nombre = $oIfx->f('aprobador_nombre');
+                $firmas_debug[] = [
+                    'aprobador_id' => $oIfx->f('aprobador_id'),
+                    'aprobador_nombre' => $nombre,
+                    'cargo_id' => $oIfx->f('cargo_id'),
+                    'cargo_nombre' => $cargo,
+                    'enviar' => $oIfx->f('enviar'),
+                ];
 
                 if(trim(strtoupper($cargo))=='SOLICITADO POR' || trim(strtoupper($cargo))=='SOLICITADO POR:'){
                     $solicitado_por = $nombre;
@@ -305,6 +313,14 @@ else{
     //SECUENCIAL
 
     $secuencial_pedido= cero_mas_func('0', 9 - strlen($pedi)).$pedi;
+
+    echo "<pre>DEBUG firmas pedido_compra.php\n";
+    echo "pedido={$pedi} empresa={$idempresa} sucursal={$idsucursal}\n";
+    echo "responsable={$responsable}\n";
+    echo "solicitado_por={$solicitado_por}\n";
+    echo "total_firmas={$contador}\n";
+    echo "firmas_debug=" . print_r($firmas_debug, true);
+    echo "firmas_html=" . $firmas_html . "\n</pre>";
 
 
 $html = <<<EOD
