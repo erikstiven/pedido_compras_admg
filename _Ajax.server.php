@@ -10875,6 +10875,75 @@ function cargar_productos($aForm = '', $idbodega = '', $empresa = '', $sucursal 
     return $oReturn;
 }
 /*GENERACION PDF SOLICITUD DE COMPRA EDICION*/
+function generar_debug_firmas_html($oIfxA, $idempresa, $idsucursal, $pedido)
+{
+    $pedidoDb = str_replace("'", "''", (string)$pedido);
+    $escape = function ($value) {
+        return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+    };
+
+    $debugHtml = '<div style="font-size:10px;border:1px dashed #999;padding:6px;margin-bottom:8px;">';
+    $debugHtml .= '<strong>DEBUG FIRMAS</strong><br>';
+    $debugHtml .= 'Empresa: ' . $escape($idempresa) . ' | Sucursal: ' . $escape($idsucursal) . ' | Pedido: ' . $escape($pedido);
+
+    $debugHtml .= '<div style="margin-top:4px;"><strong>Aprobadores en comercial.aprobador_pedido</strong></div>';
+    $debugHtml .= '<table style="width:100%;border-collapse:collapse;" border="1" cellpadding="2">';
+    $debugHtml .= '<thead><tr>'
+        . '<th>Orden</th><th>Envia</th><th>ID</th><th>Nombre</th><th>Cargo ID</th><th>Cargo</th>'
+        . '</tr></thead><tbody>';
+
+    $rowsFirmas = '';
+    $sqlFirmas = "SELECT aprobador_id, aprobador_nombre, cargo_id, cargo_nombre, enviar, orden"
+        . " FROM comercial.aprobador_pedido"
+        . " WHERE empresa = $idempresa AND sucursal = $idsucursal AND pedido = '$pedidoDb'"
+        . " ORDER BY orden";
+    if ($oIfxA->Query($sqlFirmas)) {
+        do {
+            $rowsFirmas .= '<tr>'
+                . '<td>' . $escape($oIfxA->f('orden')) . '</td>'
+                . '<td>' . $escape($oIfxA->f('enviar')) . '</td>'
+                . '<td>' . $escape($oIfxA->f('aprobador_id')) . '</td>'
+                . '<td>' . $escape($oIfxA->f('aprobador_nombre')) . '</td>'
+                . '<td>' . $escape($oIfxA->f('cargo_id')) . '</td>'
+                . '<td>' . $escape($oIfxA->f('cargo_nombre')) . '</td>'
+                . '</tr>';
+        } while ($oIfxA->SiguienteRegistro());
+    }
+    if ($rowsFirmas === '') {
+        $rowsFirmas = '<tr><td colspan="6">Sin registros</td></tr>';
+    }
+    $debugHtml .= $rowsFirmas . '</tbody></table>';
+
+    $debugHtml .= '<div style="margin-top:4px;"><strong>Aprobaciones en comercial.aprobaciones_solicitud_compra</strong></div>';
+    $debugHtml .= '<table style="width:100%;border-collapse:collapse;" border="1" cellpadding="2">';
+    $debugHtml .= '<thead><tr>'
+        . '<th>ID Aprobacion</th><th>Usuario</th><th>Fecha</th>'
+        . '</tr></thead><tbody>';
+
+    $rowsAprobaciones = '';
+    $sqlAprobaciones = "SELECT id_aprobacion, usuario, fecha"
+        . " FROM comercial.aprobaciones_solicitud_compra"
+        . " WHERE empresa = $idempresa AND sucursal = $idsucursal AND id_solicitud = '$pedidoDb'"
+        . " ORDER BY fecha";
+    if ($oIfxA->Query($sqlAprobaciones)) {
+        do {
+            $rowsAprobaciones .= '<tr>'
+                . '<td>' . $escape($oIfxA->f('id_aprobacion')) . '</td>'
+                . '<td>' . $escape($oIfxA->f('usuario')) . '</td>'
+                . '<td>' . $escape($oIfxA->f('fecha')) . '</td>'
+                . '</tr>';
+        } while ($oIfxA->SiguienteRegistro());
+    }
+    if ($rowsAprobaciones === '') {
+        $rowsAprobaciones = '<tr><td colspan="3">Sin registros</td></tr>';
+    }
+    $debugHtml .= $rowsAprobaciones . '</tbody></table>';
+
+    $debugHtml .= '</div>';
+
+    return $debugHtml;
+}
+
 function genera_pdf_doc_reporte($pedi, $aForm = '')
 {
 
@@ -10906,6 +10975,8 @@ function genera_pdf_doc_reporte($pedi, $aForm = '')
     } else {
         $html = generar_pedido_compra_pdf($idempresa, $idsucursal, $pedi);
     }
+
+    $html = generar_debug_firmas_html($oIfxA, $idempresa, $idsucursal, $pedi) . $html;
 
     $_SESSION['pdf'] = $html;
     if (!empty($ubi)) {
@@ -10949,6 +11020,7 @@ function genera_pdf_doc($aForm = '')
         $diario = generar_pedido_compra_pdf($idempresa, $idsucursal, $nota_compra);
     }
 
+    $diario = generar_debug_firmas_html($oIfxA, $idempresa, $idsucursal, $nota_compra) . $diario;
 
     $_SESSION['pdf'] = $diario;
     if (!empty($ubi)) {
