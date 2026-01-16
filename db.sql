@@ -3,6 +3,9 @@ ALTER TABLE saepedi
     ADD COLUMN IF NOT EXISTS pedi_tip_sol INTEGER;
 
 ALTER TABLE saepedi
+    ADD COLUMN IF NOT EXISTS pedi_pri_pedi VARCHAR(10);
+
+ALTER TABLE saepedi
     ADD CONSTRAINT saepedi_tip_sol_fk
         FOREIGN KEY (pedi_cod_empr, pedi_tip_sol)
         REFERENCES saetpro (tpro_cod_empr, tpro_cod_tpro);
